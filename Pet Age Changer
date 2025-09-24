@@ -1,0 +1,165 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "KuniPetAgeLeveller"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Main Frame (Dark Glass)
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 320, 0, 200)
+frame.Position = UDim2.new(0.5, -160, 0.5, -100)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BackgroundTransparency = 0.6
+frame.Active = true
+frame.Draggable = true
+frame.Name = "PetAgeFrame"
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+local stroke = Instance.new("UIStroke", frame)
+stroke.Color = Color3.fromRGB(0, 200, 255)
+stroke.Thickness = 2
+stroke.Transparency = 0.5
+
+-- Title
+local title = Instance.new("TextLabel", frame)
+title.Text = "🌸 Pet Age Leveller 🌸"
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 20
+title.TextColor3 = Color3.fromRGB(0, 200, 255)
+title.BackgroundTransparency = 1
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Position = UDim2.new(0, 0, 0, 5)
+
+-- Equipped Pet Label
+local petInfo = Instance.new("TextLabel", frame)
+petInfo.Text = "Equipped Pet: [None]"
+petInfo.Font = Enum.Font.FredokaOne
+petInfo.TextSize = 16
+petInfo.TextColor3 = Color3.fromRGB(0, 200, 255)
+petInfo.BackgroundTransparency = 1
+petInfo.Position = UDim2.new(0, 12, 0, 40)
+petInfo.Size = UDim2.new(1, -24, 0, 24)
+petInfo.TextXAlignment = Enum.TextXAlignment.Left
+
+-- "Set Age to 50" Button
+local button = Instance.new("TextButton", frame)
+button.Text = "🎀 Set Age to 50 🎀"
+button.Font = Enum.Font.FredokaOne
+button.TextSize = 16
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+button.BackgroundTransparency = 0.6
+button.Size = UDim2.new(0, 220, 0, 36)
+button.Position = UDim2.new(0.5, -110, 0, 76)
+Instance.new("UICorner", button)
+local btnStroke = Instance.new("UIStroke", button)
+btnStroke.Color = Color3.fromRGB(0, 200, 255)
+btnStroke.Thickness = 1.5
+btnStroke.Transparency = 0.5
+
+-- "Add +1 Age" Button
+local addAgeButton = Instance.new("TextButton", frame)
+addAgeButton.Text = "🌟 Add +1 Age 🌟"
+addAgeButton.Font = Enum.Font.FredokaOne
+addAgeButton.TextSize = 16
+addAgeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+addAgeButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+addAgeButton.BackgroundTransparency = 0.6
+addAgeButton.Size = UDim2.new(0, 220, 0, 36)
+addAgeButton.Position = UDim2.new(0.5, -110, 0, 122)
+Instance.new("UICorner", addAgeButton)
+local addStroke = Instance.new("UIStroke", addAgeButton)
+addStroke.Color = Color3.fromRGB(0, 200, 255)
+addStroke.Thickness = 1.5
+addStroke.Transparency = 0.5
+
+-- Footer
+local footer = Instance.new("TextLabel", frame)
+footer.Text = "Tiktok: @wtf.raxnz_"
+footer.Font = Enum.Font.FredokaOne
+footer.TextSize = 13
+footer.TextColor3 = Color3.fromRGB(0, 200, 255)
+footer.BackgroundTransparency = 1
+footer.Size = UDim2.new(1, 0, 0, 20)
+footer.Position = UDim2.new(0, 0, 1, -20)
+
+-- Function to get equipped pet (supports mutated pets)
+local function getEquippedPetTool()
+	character = player.Character or player.CharacterAdded:Wait()
+	for _, child in pairs(character:GetChildren()) do
+		if child:IsA("Tool") and (child.Name:find("Age") or child:FindFirstChild("Mutation")) then
+			return child
+		end
+	end
+	return nil
+end
+
+-- Update GUI pet display
+local function updateGUI()
+	local pet = getEquippedPetTool()
+	if pet then
+		petInfo.Text = "Equipped Pet: " .. pet.Name
+	else
+		petInfo.Text = "Equipped Pet: [None]"
+	end
+end
+
+-- Set Age to 50 Button Logic
+button.MouseButton1Click:Connect(function()
+	local tool = getEquippedPetTool()
+	if tool then
+		for i = 5, 1, -1 do
+			button.Text = "🎀 Setting Age in " .. i .. "..."
+			task.wait(1)
+		end
+		local newName = tool.Name:gsub("%[Age%s%d+%]", "[Age 50]")
+		tool.Name = newName
+		petInfo.Text = "Equipped Pet: " .. tool.Name
+		button.Text = "🎀 Set Age to 50 🎀"
+	else
+		button.Text = "🎀 No Pet Equipped! 🎀"
+		task.wait(2)
+		button.Text = "🎀 Set Age to 50 🎀"
+	end
+end)
+
+-- Add +1 Age Button Logic (up to 100)
+addAgeButton.MouseButton1Click:Connect(function()
+	local tool = getEquippedPetTool()
+	if tool then
+		local currentAge = tonumber(tool.Name:match("%[Age%s(%d+)%]"))
+		if currentAge and currentAge < 100 then
+			for i = 3, 1, -1 do
+				addAgeButton.Text = "🌟 Adding +1 in " .. i .. "..."
+				task.wait(1)
+			end
+			local newAge = currentAge + 1
+			local newName = tool.Name:gsub("%[Age%s%d+%]", "[Age " .. newAge .. "]")
+			tool.Name = newName
+			petInfo.Text = "Equipped Pet: " .. tool.Name
+			addAgeButton.Text = "🌟 Add +1 Age 🌟"
+		elseif currentAge and currentAge >= 100 then
+			addAgeButton.Text = "🌟 Max Age is 100! 🌟"
+			task.wait(2)
+			addAgeButton.Text = "🌟 Add +1 Age 🌟"
+		else
+			addAgeButton.Text = "🌟 Invalid Age Format! 🌟"
+			task.wait(2)
+			addAgeButton.Text = "🌟 Add +1 Age 🌟"
+		end
+	else
+		addAgeButton.Text = "🌟 No Pet Equipped! 🌟"
+		task.wait(2)
+		addAgeButton.Text = "🌟 Add +1 Age 🌟"
+	end
+end)
+
+-- Auto refresh equipped pet display
+task.spawn(function()
+	while true do
+		updateGUI()
+		task.wait(1)
+	end
+end)
